@@ -6,6 +6,7 @@
 
 int fields[10][10];
 int max_ships = 2;
+const int ship_size = 3;
 
 void initialization()
 {
@@ -18,11 +19,11 @@ void initialization()
     }
 }
 
-int check_has_ship_on_positions(int pos_x, int pos_y, int width, int height)
+int check_normal_has_ship_on_positions(int pos_x, int pos_y, int width, int height)
 {
-    for (int x = pos_x; x < pos_x + width; x++)
+    for (int x = pos_x; x < pos_x + ship_size; x++)
     {
-        for (int y = pos_y; y < pos_y + height; y++)
+        for (int y = pos_y; y < pos_y + ship_size; y++)
         {
             if (fields[x][y] != 0)
             {
@@ -33,44 +34,108 @@ int check_has_ship_on_positions(int pos_x, int pos_y, int width, int height)
     return 0;
 }
 
-int setup_ship(int width, int height)
+int check_diagonal_has_ship_on_positions(int pos_x, int pos_y, int width, int height)
 {
-    int pos_x = 0;
-    int pos_y = 0;
-    printf("Diga a posição que quer colocar o navio [Tamanho %ix%i]:\n", width, height);
-    printf("X:");
-    scanf("%i", &pos_x);
-    printf("Y:");
-    scanf("%i", &pos_y);
+    for (int x = pos_x; x < pos_x + ship_size; x++)
+    {
+        for (int y = pos_y; y < pos_y + ship_size; y++)
+        {
+            if (x == y && fields[x][y] != 0)
+            {
+                return 2;
+            }
+        }
+    }
+    return 0;
+}
 
-    printf("%i%i\n", pos_x, pos_y);
-
+int setup_vertical_ship(int pos_x, int pos_y)
+{
     // Checa se não posicao não valida
-    if (pos_x + width > 10)
+    if (pos_x + ship_size > 10)
     {
         printf("A posição X não encaixa no tabuleiro");
         return 1;
     }
 
-    if (pos_y + height > 10)
+    if (pos_y >= 10)
     {
         printf("A posição Y não encaixa no tabuleiro.");
         return 1;
     }
 
     // Checa se não existe outro navio
-    if(check_has_ship_on_positions(pos_x, pos_y, width, height) != 0)
+    if(check_normal_has_ship_on_positions(pos_x, pos_y, ship_size, 1) != 0)
     {
         printf("Na posição existe outro navio tente novamente.");
         return 2;
     }
 
-    for (int x = pos_x; x < pos_x + width; x++)
+    for (int x = pos_x; x < pos_x + ship_size; x++)
     {
-        for (int y = pos_y; y < pos_y + height; y++)
+        fields[x][pos_y] = 3;
+    }
+    return 0;
+}
+
+int setup_horizontal_ship(int pos_x, int pos_y)
+{
+    // Checa se não posicao não valida
+    if (pos_x >= 10)
+    {
+        printf("A posição X não encaixa no tabuleiro");
+        return 1;
+    }
+
+    if (pos_y + ship_size >= 10)
+    {
+        printf("A posição Y não encaixa no tabuleiro.");
+        return 1;
+    }
+
+    // Checa se não existe outro navio
+    if(check_normal_has_ship_on_positions(pos_x, pos_y, 1, ship_size) != 0)
+    {
+        printf("Na posição existe outro navio tente novamente.");
+        return 2;
+    }
+    
+    for (int y = pos_y; y < pos_y + ship_size; y++)
+    {
+        fields[pos_x][y] = 3;
+    }
+    return 0;
+}
+
+int setup_diagonal_ship(int pos_x, int pos_y)
+{
+    if (pos_x + ship_size > 10)
+    {
+        printf("A posição X não encaixa no tabuleiro");
+        return 1;
+    }
+
+    if (pos_y + ship_size > 10)
+    {
+        printf("A posição Y não encaixa no tabuleiro.");
+        return 1;
+    }
+
+    //Checa se não existe outro navio
+    if(check_diagonal_has_ship_on_positions(pos_x, pos_y, ship_size, 1) != 0)
+    {
+        printf("Na posição existe outro navio tente novamente.");
+        return 2;
+    }
+
+    for (int x = pos_x; x < pos_x + ship_size; x++)
+    {
+        for (int y = pos_y; y < pos_y + ship_size; y++)
         {
-            printf("test\n");
-            fields[x][y] = 3;
+            if(x == y)
+            {
+                fields[x][y] = 3;
+            }
         }
     }
     return 0;
@@ -123,17 +188,10 @@ int main()
     // 0 0 1 0 0
 
     initialization();
-    int response = -1;
-    do
-    {
-        response = setup_ship(3, 1);
+    setup_vertical_ship(0, 0);
+    setup_horizontal_ship(0, 1);
+    setup_diagonal_ship(5, 5);
 
-    } while (response != 0);
-    do
-    {
-        response = setup_ship(1, 3);
-
-    } while (response != 0);
     show_fields();
     return 0;
 }
